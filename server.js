@@ -36,7 +36,7 @@ app.use('/backend/user', function( req, res, next){
 });*/
 var MongoDbUrl = 'mongodb://127.0.0.1:27017/test';
 app.get("/backend/login", function(req, res){
-
+    console.log("doing login");
     var username = req.query.username;
     var password = req.query.password;
     var rememberMe = req.query.rememberMe || "false";
@@ -60,7 +60,27 @@ app.get("/backend/login", function(req, res){
 
        });
    });
+});
 
+
+app.post('/backend/leaderboard', function( req, res ){
+    var params = req.body; // { "name" : "myName" , "score" : "scoreValue" }
+    params.score = parseInt( params.score );
+    MongoClient.connect(MongoDbUrl, function(err, db) {
+        var leaderboard = db.collection('leaderboard');
+        leaderboard.insert(params, function( err, result ){
+            res.send(result);
+        })
+    })
+});
+
+app.get('/backend/leaderboard', function( req, res ){
+    MongoClient.connect(MongoDbUrl, function(err, db) {
+        var leaderboard = db.collection('leaderboard');
+        leaderboard.find().sort({"score" : -1}).limit(10).toArray(function(err, results){
+            res.send(results);
+        });
+    });
 });
 
 app.post('/backend/user/sendMessage', function(req, res){
